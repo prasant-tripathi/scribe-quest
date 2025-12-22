@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Scribe Quest: Dharma Hub Fixed</title>
+    <title>Scribe Quest: Dharma Hub Final</title>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         :root { --saffron: #FF9933; --deep-temple: #1a0f0d; --wisdom: #2ecc71; --gold: #FFD700; --error: #e74c3c; }
@@ -13,7 +13,7 @@
             display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
         }
 
-        /* Clean Progress Bar: No outline to avoid clashing with header lines */
+        /* Clean Progress Bar: No outline, integrated into header */
         .goal-container { flex-grow: 1; margin: 0 60px; text-align: center; }
         .progress-track { 
             width: 100%; height: 10px; background: rgba(255,255,255,0.05); 
@@ -22,7 +22,7 @@
         #progress-bar { width: 0%; height: 100%; background: var(--gold); transition: width 0.8s ease; box-shadow: 0 0 10px var(--gold); }
         .goal-label { font-size: 0.75rem; color: var(--gold); letter-spacing: 2px; }
 
-        /* Dashboard: Uddeshya/Vault on Left, Roster/Log on Right */
+        /* Dashboard: Left (Uddeshya/Vault) | Center (Wheel) | Right (Roster/Log) */
         .dashboard { display: none; grid-template-columns: 300px 1fr 300px; height: calc(100vh - 72px); gap: 15px; padding: 15px; box-sizing: border-box; }
         .panel { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,153,51,0.2); border-radius: 12px; display: flex; flex-direction: column; padding: 15px; overflow: hidden; }
 
@@ -79,7 +79,7 @@
     </div>
     <div style="min-width: 180px; text-align: right;">
         <div style="font-size: 1.4rem; color:var(--wisdom)">WISDOM: <span id="wisdom-val">0</span></div>
-        <div id="conn-status" style="font-size:0.75rem; color:var(--saffron)">Hub Active</div>
+        <div id="conn-status" style="font-size:0.75rem; color:var(--saffron)">Connecting...</div>
     </div>
 </header>
 
@@ -99,8 +99,8 @@
             </div>
         </div>
         <div id="host-info" style="display:none; margin-top:auto; font-size:0.8rem;">
-            <p style="color:var(--saffron); margin:0;">Your Hub Code:</p>
-            <b id="my-id" style="color:var(--gold); word-break:break-all;">...</b>
+            <p style="color:var(--saffron); margin:0;">Hub Code:</p>
+            <b id="my-id" style="color:var(--gold); word-break:break-all; font-size:0.7rem; background:#000; padding:5px; display:block;">...</b>
         </div>
     </aside>
 
@@ -148,7 +148,6 @@
         if (r === 'host' && document.getElementById('host-pass').value !== SECRET_KEY) return alert("पासवर्ड गलत है!");
         
         role = r;
-        // DASHBOARD MUST BE VISIBLE NOW
         document.getElementById('intro-overlay').style.display = 'none';
         document.getElementById('game-ui').style.display = 'grid';
         document.getElementById('display-name').innerText = "Scribe: " + myName;
@@ -160,7 +159,9 @@
                 document.getElementById('my-id').innerText = id;
                 document.getElementById('conn-status').innerText = "Hub Active";
             } else {
-                setupConnection(peer.connect(document.getElementById('join-id').value.trim()));
+                const targetId = document.getElementById('join-id').value.trim();
+                const conn = peer.connect(targetId);
+                setupConnection(conn);
             }
         });
         peer.on('connection', conn => { if (role === 'host') setupConnection(conn); });
@@ -169,8 +170,8 @@
 
     function setupConnection(conn) {
         conn.on('open', () => {
-            conn.send({ type: 'HELLO', name: myName });
             document.getElementById('conn-status').innerText = "Linked";
+            conn.send({ type: 'HELLO', name: myName });
         });
         conn.on('data', data => {
             if (role === 'host') {
@@ -180,6 +181,8 @@
                     scribes[conn.peer] = { name: data.name };
                     updateRoster();
                     logAction(data.name, "Scribe Quest में शामिल हुए।");
+                    // Sync initial data if librarian
+                    conn.send({ type: 'SYNC', total: teamWisdom, level: state.level });
                 }
             }
             if (data.type === 'RESTORE') { 
@@ -187,6 +190,11 @@
                 state.level = data.level;
                 updateUI(); 
                 logAction(data.name, "ने वर्ण सूत्र जोड़ा", "+" + data.val); 
+            }
+            if (data.type === 'SYNC') {
+                teamWisdom = data.total;
+                state.level = data.level;
+                updateUI();
             }
         });
     }
@@ -197,7 +205,7 @@
         Object.keys(scribes).forEach(id => {
             const div = document.createElement('div');
             div.className = 'roster-item';
-            div.innerHTML = `<span>📖 ${scribes[id].name}</span> <span style="color:var(--wisdom)">Active</span>`;
+            div.innerHTML = `<span>📖 ${scribes[id].name}</span> <span style="color:var(--wisdom)">Online</span>`;
             list.appendChild(div);
         });
     }
@@ -221,7 +229,8 @@
             teamWisdom += 25;
             if (state.level < Levels.length - 1) state.level++;
             const msg = { type: 'RESTORE', val: 25, total: teamWisdom, level: state.level, name: myName };
-            if (role === 'host') Object.values(connections).forEach(c => c.send(msg)); else if(Object.values(connections)[0]) Object.values(connections)[0].send(msg);
+            if (role === 'host') Object.values(connections).forEach(c => c.send(msg)); 
+            else if(Object.values(connections)[0]) Object.values(connections)[0].send(msg);
             updateUI();
             logAction(myName, "सफलता!", "+25");
         } else alert("गलत संरेखण!");
