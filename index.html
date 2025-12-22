@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Scribe Quest: Shared Dharma Ledger</title>
+    <title>Scribe Quest: Synchronized Dharma Ledger</title>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         :root { --saffron: #FF9933; --deep-temple: #1a0f0d; --wisdom: #2ecc71; --gold: #FFD700; --error: #ff4444; }
@@ -23,7 +23,7 @@
         .btn { padding: 10px; cursor: pointer; border: 1px solid var(--saffron); background: transparent; color: white; border-radius: 5px; font-weight: bold; }
         .restore-btn { background: var(--gold); color: black; border: none; padding: 15px 50px; font-size: 1.7rem; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .scribe-log { flex-grow: 1; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 10px; font-size: 0.85rem; margin-top: 10px; border: 1px solid #333; }
-        .freeze-btn { background: var(--error); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
+        .copy-btn { background: var(--saffron); color: black; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; font-weight: bold; margin-top: 5px; }
         #frozen-msg { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--error); font-size: 1.5rem; font-weight: bold; z-index: 100; text-align: center; background: rgba(0,0,0,0.9); padding: 20px; border-radius: 10px; border: 2px solid var(--error); }
         #intro-overlay { position: fixed; inset: 0; background: #1a0f0d; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
@@ -55,7 +55,7 @@
     </div>
     <div style="text-align: right; min-width:150px;">
         <div style="font-size: 1.4rem; color:var(--wisdom)">WISDOM: <span id="wisdom-val">0</span></div>
-        <div id="conn-status" style="font-size:0.7rem; color:var(--saffron)">Waiting...</div>
+        <div id="conn-status" style="font-size:0.7rem; color:var(--saffron)">Connecting...</div>
     </div>
 </header>
 
@@ -73,7 +73,8 @@
             <button class="btn" onclick="changeNoun('Sadhu')">साधु</button>
         </div>
         <div id="host-info" style="display:none; margin-top:auto; font-size:0.7rem;">
-            Hub Code: <b id="my-id" style="color:var(--gold); cursor:pointer;" onclick="copyCode()">...</b>
+            Hub Code: <b id="my-id" style="color:var(--gold)">...</b>
+            <button class="copy-btn" onclick="copyCode()">COPY HUB CODE</button>
         </div>
     </aside>
 
@@ -131,7 +132,7 @@
                 document.getElementById('host-info').style.display = 'block';
                 document.getElementById('my-id').innerText = id;
                 document.getElementById('conn-status').innerText = "Hub Active";
-                logAction("System", "Hub is now open for scribes.");
+                logAction("System", "Hub is open.");
             } else {
                 setupConnection(peer.connect(document.getElementById('join-id').value.trim()));
             }
@@ -147,23 +148,24 @@
         });
         conn.on('data', data => {
             if (role === 'host') {
-                // Relay everything to all scribes
+                // Relay incoming messages to ALL connected scribes
                 Object.values(connections).forEach(c => { if (c.peer !== conn.peer) c.send(data); });
                 
                 if (data.type === 'HELLO') {
                     connections[conn.peer] = conn;
                     scribes[conn.peer] = { name: data.name, frozen: false };
                     updateRoster();
-                    const joinMsg = { type: 'LOG', user: data.name, msg: "connected to the hub." };
+                    const joinMsg = { type: 'LOG', user: data.name, msg: "joined the hub." };
                     broadcast(joinMsg);
-                    logAction(data.name, "connected to the hub.");
+                    logAction(data.name, "joined the hub.");
                     conn.send({ type: 'SYNC', total: teamWisdom, level: state.level });
                 }
             }
             
+            // Handle synchronized updates
             if (data.type === 'RESTORE') { 
                 teamWisdom = data.total; state.level = data.level; updateUI(); 
-                logAction(data.name, "restored a thread!", "+" + data.val); 
+                logAction(data.name, "restored a सूत्र!", "+" + data.val); 
             }
             if (data.type === 'PENALTY') {
                 teamWisdom = data.total; updateUI();
@@ -171,14 +173,47 @@
             }
             if (data.type === 'LOG') { logAction(data.user, data.msg); }
             if (data.type === 'FREEZE') { state.frozen = data.val; updateFreezeUI(); }
+            if (data.type === 'SYNC') { teamWisdom = data.total; state.level = data.level; updateUI(); }
         });
+    }
+
+    function broadcast(msg) {
+        if (role === 'host') {
+            Object.values(connections).forEach(c => c.send(msg));
+        } else if (Object.values(connections)[0]) {
+            Object.values(connections)[0].send(msg); // Send to Host to relay
+        }
+    }
+
+    function doRestore() {
+        if (state.currentIdx === Levels[state.level].targetIdx && state.currentNoun === Levels[state.level].noun) {
+            teamWisdom += 25; if (state.level < Levels.length - 1) state.level++;
+            const msg = { type: 'RESTORE', val: 25, total: teamWisdom, level: state.level, name: myName };
+            broadcast(msg);
+            logAction(myName, "restored a सूत्र!", "+25"); updateUI();
+        } else {
+            teamWisdom = Math.max(0, teamWisdom - 10);
+            const msg = { type: 'PENALTY', val: 10, total: teamWisdom, name: myName };
+            broadcast(msg);
+            logAction(myName, "misaligned a सूत्र.", "-10"); updateUI();
+        }
+    }
+
+    function logAction(u, m) {
+        const l = document.getElementById('log'); const e = document.createElement('div');
+        e.innerHTML = `<b style="color:var(--saffron)">${u}</b> ${m}`; l.prepend(e);
+    }
+
+    function copyCode() {
+        const id = document.getElementById('my-id').innerText;
+        navigator.clipboard.writeText(id).then(() => alert("Code copied!"));
     }
 
     function updateRoster() {
         const list = document.getElementById('roster-list'); list.innerHTML = '';
         Object.keys(scribes).forEach(id => {
             const div = document.createElement('div'); div.style.display = "flex"; div.style.justifyContent = "space-between";
-            const fBtn = role === 'host' ? `<button class="freeze-btn" onclick="toggleFreeze('${id}')">${scribes[id].frozen ? 'Unfreeze' : 'Freeze'}</button>` : '';
+            const fBtn = role === 'host' ? `<button class="btn" style="padding:2px 5px; font-size:0.6rem; background:var(--error);" onclick="toggleFreeze('${id}')">${scribes[id].frozen ? 'Unfreeze' : 'Freeze'}</button>` : '';
             div.innerHTML = `<span>📖 ${scribes[id].name}</span> ${fBtn}`;
             list.appendChild(div);
         });
@@ -198,23 +233,6 @@
         document.getElementById('frozen-msg').style.display = state.frozen ? 'block' : 'none';
     }
 
-    function doRestore() {
-        if (state.currentIdx === Levels[state.level].targetIdx && state.currentNoun === Levels[state.level].noun) {
-            teamWisdom += 25; if (state.level < Levels.length - 1) state.level++;
-            broadcast({ type: 'RESTORE', val: 25, total: teamWisdom, level: state.level, name: myName });
-            logAction(myName, "restored a thread!", "+25"); updateUI();
-        } else {
-            teamWisdom = Math.max(0, teamWisdom - 10);
-            broadcast({ type: 'PENALTY', val: 10, total: teamWisdom, name: myName });
-            logAction(myName, "misaligned a सूत्र.", "-10"); updateUI(); alert("Incorrect alignment! -10 Wisdom Penalty.");
-        }
-    }
-
-    function broadcast(msg) {
-        if (role === 'host') Object.values(connections).forEach(c => c.send(msg));
-        else if(connections) Object.values(connections)[0]?.send(msg);
-    }
-
     function updateChakra() {
         const c = document.getElementById('chakra'); c.innerHTML = '';
         Data[state.currentNoun].forEach((word, i) => {
@@ -223,28 +241,9 @@
         });
     }
 
-    function rotateWheel(dir) {
-        if (state.frozen) return;
-        state.rotation += dir * (360/7);
-        state.currentIdx = (state.currentIdx - dir + 7) % 7;
-        document.getElementById('chakra').style.transform = `rotate(${state.rotation}deg)`;
-    }
-
+    function rotateWheel(dir) { if (!state.frozen) { state.rotation += dir * (360/7); state.currentIdx = (state.currentIdx - dir + 7) % 7; document.getElementById('chakra').style.transform = `rotate(${state.rotation}deg)`; } }
     function changeNoun(n) { if (!state.frozen) { state.currentNoun = n; updateChakra(); } }
-
-    function logAction(u, m) {
-        const l = document.getElementById('log'); const e = document.createElement('div');
-        e.innerHTML = `<b style="color:var(--saffron)">${u}</b> ${m}`; l.prepend(e);
-    }
-
-    function updateUI() {
-        document.getElementById('wisdom-val').innerText = teamWisdom;
-        document.getElementById('mission-text').innerText = Levels[state.level].mission;
-        document.getElementById('progress-bar').style.width = Math.min(teamWisdom, 100) + "%";
-        updateChakra();
-    }
-    
-    function copyCode() { navigator.clipboard.writeText(document.getElementById('my-id').innerText); alert("Code copied!"); }
+    function updateUI() { document.getElementById('wisdom-val').innerText = teamWisdom; document.getElementById('mission-text').innerText = Levels[state.level].mission; document.getElementById('progress-bar').style.width = Math.min(teamWisdom, 100) + "%"; updateChakra(); }
 </script>
 </body>
 </html>
