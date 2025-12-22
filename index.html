@@ -2,177 +2,132 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scribe Quest: The Restoration</title>
+    <title>Scribe Quest: The Networked Bond</title>
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
     <style>
-        :root { --saffron: #FF9933; --temple: #5d4037; --wisdom: #4CAF50; --error: #D32F2F; --gold: #FFD700; --parchment: #fdf5e6; }
+        :root { --saffron: #FF9933; --temple: #5d4037; --wisdom: #4CAF50; --error: #D32F2F; --gold: #FFD700; }
         body { font-family: 'Segoe UI', sans-serif; background: #1a0f0d; color: white; margin: 0; overflow: hidden; height: 100vh; }
-        
-        /* THE STORY OVERLAY */
-        #intro-overlay {
-            position: fixed; top:0; left:0; width: 100%; height: 100%;
-            background: radial-gradient(circle, #3d2b26 0%, #1a0f0d 100%);
-            z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 40px; box-sizing: border-box; text-align: center;
-        }
-
-        .story-container { max-width: 850px; line-height: 1.6; }
-        .story-title { font-size: 3.5rem; color: var(--saffron); margin-bottom: 10px; text-shadow: 0 0 15px rgba(255,153,51,0.5); }
-        .story-text { font-size: 1.2rem; color: #e0ccb1; margin-bottom: 25px; text-align: justify; }
-        .highlight { color: var(--gold); font-weight: bold; }
-
-        .choice-box { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
-        .scribe-btn { 
-            background: transparent; border: 2px solid var(--saffron); color: white; 
-            padding: 15px 40px; font-size: 1.2rem; cursor: pointer; border-radius: 5px; transition: 0.3s;
-        }
-        .scribe-btn:hover { background: var(--saffron); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(255,153,51,0.4); }
-
-        /* DASHBOARD LAYOUT */
-        .dashboard {
-            display: none; grid-template-columns: 300px 1fr 300px;
-            grid-template-rows: 80px 1fr 100px; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box;
-        }
-
-        header { grid-column: 1 / -1; background: var(--temple); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border: 2px solid var(--saffron); border-radius: 8px; }
-        .panel-left { background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 20px; border-left: 5px solid var(--saffron); }
-        .panel-right { background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 20px; border-right: 5px solid var(--saffron); }
-        
-        .wheel-container { position: relative; width: 400px; height: 400px; margin: auto; }
-        .chakra {
-            width: 100%; height: 100%; border-radius: 50%; border: 10px double var(--saffron);
-            position: relative; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background: white; display: flex; align-items: center; justify-content: center;
-        }
-        .spoke { position: absolute; width: 100%; text-align: center; font-weight: bold; font-size: 1.3rem; color: var(--temple); }
-        .pointer { position: absolute; top: -35px; left: 50%; transform: translateX(-50%); border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 40px solid var(--gold); z-index: 10; }
-
-        .inventory-btn { width: 100%; padding: 12px; margin-bottom: 10px; background: transparent; color: white; border: 1px solid var(--saffron); cursor: pointer; border-radius: 5px; }
-        .inventory-btn:hover { background: var(--saffron); }
-
-        footer { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; }
-        .submit-btn { padding: 15px 60px; font-size: 1.5rem; background: var(--gold); color: var(--temple); border: none; cursor: pointer; font-weight: bold; border-radius: 50px; }
+        .dashboard { display: grid; grid-template-columns: 320px 1fr 320px; grid-template-rows: 80px 1fr 100px; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box; }
+        header { grid-column: 1 / -1; background: var(--temple); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border: 2px solid var(--saffron); }
+        .panel { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; }
+        .scribe-log { height: 250px; background: rgba(0,0,0,0.3); padding: 10px; overflow-y: auto; border: 1px solid #444; font-size: 0.8rem; }
+        .btn { padding: 10px; cursor: pointer; border: 1px solid var(--saffron); background: transparent; color: white; font-weight: bold; width: 100%; margin: 5px 0; }
+        .btn:hover { background: var(--saffron); }
+        #intro-overlay { position: fixed; inset: 0; background: var(--temple); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        input { padding: 10px; margin: 10px; width: 250px; background: #222; color: white; border: 1px solid var(--saffron); }
     </style>
 </head>
 <body>
 
 <div id="intro-overlay">
-    <div class="story-container">
-        <h1 class="story-title">THE LAST SCRIBE</h1>
-        <p class="story-text">
-            For millennia, the <span class="highlight">Dharma Manuscript</span> held the logic of the universe together. But then came <span class="highlight">Vismriti</span>—the Shadow of Forgetfulness. This dark force has shattered the sacred scrolls, turning the perfect Sanskrit grammar into chaos. 
-            <br><br>
-            Without the grammar, the world is losing its memory. You are a member of the <span class="highlight">Ancient Order of Scribes</span>. Your task is to use the <span class="highlight">Chakra of Wisdom</span> to realign the broken fragments.
-            <br><br>
-            You are challenging Vismriti itself. Every time you fail to align a <span class="highlight">Vibhakti</span> (Case), a flame of knowledge dies. If all five flames go out, the Manuscript is lost forever. Choose your identity and begin the restoration.
-        </p>
-        <div class="choice-box">
-            <button class="scribe-btn" onclick="enterLibrary('M', 'सः (He)')">Pullinga Scribe (M)</button>
-            <button class="scribe-btn" onclick="enterLibrary('F', 'सा (She)')">Streelinga Scribe (F)</button>
-        </div>
-    </div>
+    <h1 style="color:var(--saffron)">SCRIBE ENTRANCE</h1>
+    <input type="text" id="scribe-name" placeholder="Your Name">
+    <button class="btn" onclick="startScribe()" style="width:270px">AWAKEN</button>
 </div>
 
-<div class="dashboard" id="main-dashboard">
+<div class="dashboard">
     <header>
-        <div class="stat">WISDOM: <span id="wisdom" style="color:var(--gold)">0</span></div>
-        <div class="stat" id="scribe-tag">SCRIBE: ...</div>
-        <div class="stat">FLAMES: <span id="lives" style="color:var(--error)">5</span></div>
+        <div id="display-name">Scribe: ...</div>
+        <div id="conn-status" style="color:var(--saffron)">Connecting to Akasha...</div>
+        <div>TEAM WISDOM: <span id="wisdom-val" style="color:var(--gold)">0</span></div>
     </header>
 
-    <aside class="panel-left">
-        <h2 style="color:var(--saffron)">Fragment Mission</h2>
-        <div id="mission-text" style="font-size: 1.3rem; color: var(--gold); margin-bottom: 20px;">The Boy begins the quest.</div>
-        <p style="color: #aaa; font-style: italic;">Find the word for the <b>Karta (Doer)</b>. Consult your notes: Karta = 1st Spoke.</p>
+    <aside class="panel">
+        <h2>Network</h2>
+        <p>Your Scribe Code: <b id="my-id" style="color:var(--gold)">...</b></p>
+        <input type="text" id="join-id" placeholder="Friend's Code">
+        <button class="btn" onclick="connectToFriend()">JOIN FRIEND</button>
+        <hr>
+        <button class="btn" style="background:var(--error)" onclick="sendBegAppeal()">BEG FOR MERCY</button>
     </aside>
 
-    <main style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <div class="wheel-container">
-            <div class="pointer"></div>
-            <div id="chakra" class="chakra"></div>
-        </div>
-        <div style="margin-top: 20px; display: flex; gap: 20px;">
-            <button class="scribe-btn" onclick="rotateWheel(-1)">SPIN LEFT</button>
-            <button class="scribe-btn" onclick="rotateWheel(1)">SPIN RIGHT</button>
-        </div>
+    <main style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+        <h2 id="mission">Mission: Restore the Karta (1st Spoke)</h2>
+        <div style="font-size: 3rem; margin: 20px; padding: 40px; border: 5px double var(--gold);">🔱</div>
+        <button class="btn" style="background:var(--wisdom); width: 200px;" onclick="doRestore()">RESTORE</button>
     </main>
 
-    <aside class="panel-right">
-        <h2 style="color:var(--saffron)">Word Vault</h2>
-        <button class="inventory-btn" onclick="changeNoun('Balaka')">Balaka (Masculine)</button>
-        <button class="inventory-btn" onclick="changeNoun('Kavi')">Kavi (I-Ending)</button>
-        <button class="inventory-btn" onclick="changeNoun('Balika')">Balika (Feminine)</button>
+    <aside class="panel">
+        <h2>Scribe's Log</h2>
+        <div class="scribe-log" id="log"></div>
     </aside>
-
-    <footer>
-        <button class="submit-btn" onclick="submitFragment()">RESTORE FRAGMENT</button>
-    </footer>
 </div>
 
 <script>
-    const Data = {
-        "Balaka": ["बालकः", "बालकम्", "बालकेन", "बालकाय", "बालकात्", "बालकस्य", "बालके"],
-        "Kavi": ["कविः", "कविम्", "कविना", "कवye", "कवेः", "कवेः", "कवौ"],
-        "Balika": ["बालिका", "बालिकाम्", "बालिकया", "बालिकायै", "बालिकायाः", "बालिकायाः", "बालिकायाम्"]
-    };
+    let peer, conn, myName;
+    let teamWisdom = 0;
 
-    const Levels = [
-        { role: "karta", mission: "The Boy (Karta) begins the quest.", targetIdx: 0 },
-        { role: "karma", mission: "The Poet seeks the Boy (Karma).", targetIdx: 1 },
-        { role: "karan", mission: "Write the truth with the Hand (Karan).", targetIdx: 2 }
-    ];
-
-    let state = { wisdom: 0, lives: 5, level: 0, rotation: 0, currentIdx: 0, currentNoun: "Balaka" };
-
-    function enterLibrary(gender, tag) {
+    function startScribe() {
+        myName = document.getElementById('scribe-name').value || "Unknown";
+        document.getElementById('display-name').innerText = "Scribe: " + myName;
         document.getElementById('intro-overlay').style.display = 'none';
-        document.getElementById('main-dashboard').style.display = 'grid';
-        document.getElementById('scribe-tag').innerText = "SCRIBE: " + tag;
-        updateChakra();
-    }
 
-    function updateChakra() {
-        const chakra = document.getElementById('chakra');
-        chakra.innerHTML = '';
-        const words = Data[state.currentNoun];
-        words.forEach((word, i) => {
-            const spoke = document.createElement('div');
-            spoke.className = 'spoke';
-            spoke.innerText = word;
-            spoke.style.transform = `rotate(${i * (360/7)}deg) translateY(-140px)`;
-            chakra.appendChild(spoke);
+        peer = new Peer();
+        peer.on('open', id => {
+            document.getElementById('my-id').innerText = id;
+            document.getElementById('conn-status').innerText = "Akasha Connected";
+        });
+
+        peer.on('connection', c => {
+            conn = c;
+            setupReceiver();
         });
     }
 
-    function rotateWheel(dir) {
-        state.rotation += dir * (360/7);
-        state.currentIdx = (state.currentIdx - dir + 7) % 7;
-        document.getElementById('chakra').style.transform = `rotate(${state.rotation}deg)`;
+    function connectToFriend() {
+        const id = document.getElementById('join-id').value;
+        conn = peer.connect(id);
+        setupReceiver();
     }
 
-    function changeNoun(noun) {
-        state.currentNoun = noun;
-        updateChakra();
+    function setupReceiver() {
+        conn.on('open', () => {
+            document.getElementById('conn-status').innerText = "Scribes Linked";
+            logAction("System", "Link established with another scribe.");
+        });
+        conn.on('data', data => {
+            if (data.type === 'RESTORE') {
+                teamWisdom += data.val;
+                updateUI();
+                logAction(data.name, "restored a fragment", "+" + data.val);
+            }
+            if (data.type === 'BEG') {
+                if(confirm(data.name + " is begging for 20 Wisdom. Sacrifice yours?")) {
+                    teamWisdom -= 20;
+                    conn.send({type: 'GRANT', name: myName});
+                    updateUI();
+                    logAction(myName, "sacrificed wisdom for " + data.name);
+                }
+            }
+            if (data.type === 'GRANT') {
+                alert("A Scribe has shown mercy! 1 Flame restored.");
+                logAction(data.name, "granted mercy");
+            }
+        });
     }
 
-    function submitFragment() {
-        if (state.currentIdx === Levels[state.level].targetIdx) {
-            state.wisdom += 25;
-            if(state.level < Levels.length - 1) state.level++;
-            alert("Fragment Restored! Wisdom flows back into the world.");
-        } else {
-            state.lives--;
-            alert("Vismriti's shadow blocks you. A flame dies.");
-        }
+    function doRestore() {
+        teamWisdom += 10;
         updateUI();
+        logAction(myName, "restored a fragment", "+10");
+        if(conn) conn.send({type: 'RESTORE', val: 10, name: myName});
+    }
+
+    function sendBegAppeal() {
+        if(conn) {
+            conn.send({type: 'BEG', name: myName});
+            logAction(myName, "sent an appeal for mercy");
+        }
+    }
+
+    function logAction(user, msg, val = "") {
+        const entry = document.createElement('div');
+        entry.innerHTML = `<b>${user}</b> ${msg} <span style="color:var(--gold)">${val}</span>`;
+        document.getElementById('log').prepend(entry);
     }
 
     function updateUI() {
-        document.getElementById('wisdom').innerText = state.wisdom;
-        document.getElementById('lives').innerText = state.lives;
-        document.getElementById('mission-text').innerText = Levels[state.level].mission;
-        if (state.lives <= 0) { alert("Vismriti has won. The Manuscript is lost."); location.reload(); }
-        updateChakra();
+        document.getElementById('wisdom-val').innerText = teamWisdom;
     }
 </script>
 </body>
