@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Scribe Quest: True Fit & Hindi Logic</title>
+    <title>Scribe Quest: The Dharma Hub</title>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         :root { --saffron: #FF9933; --deep-temple: #1a0f0d; --wisdom: #2ecc71; --gold: #FFD700; --error: #e74c3c; }
@@ -12,13 +12,11 @@
             margin: 0; padding: 0; overflow: hidden; height: 100vh;
         }
 
-        /* Fixed Header */
         header { 
             height: 60px; background: #2d1b18; border-bottom: 2px solid var(--saffron);
             display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
         }
 
-        /* Main Grid - Optimized for 100% Zoom */
         .dashboard { 
             display: none; grid-template-columns: 280px 1fr 280px; 
             height: calc(100vh - 62px); gap: 10px; padding: 10px; box-sizing: border-box;
@@ -30,7 +28,6 @@
             padding: 15px;
         }
 
-        /* Center Stage - Buttons on sides of wheel to save vertical space */
         .main-stage { 
             display: flex; flex-direction: column; align-items: center; justify-content: space-around;
         }
@@ -58,7 +55,6 @@
             border-top: 35px solid var(--gold); z-index: 10; filter: drop-shadow(0 2px 5px black);
         }
 
-        /* Control Buttons */
         .btn-circle {
             width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--saffron);
             background: rgba(255,153,51,0.2); color: white; font-size: 1.5rem; cursor: pointer;
@@ -71,13 +67,11 @@
             padding: 12px 60px; font-size: 1.6rem; font-weight: bold; border-radius: 40px; cursor: pointer;
             box-shadow: 0 0 20px rgba(255,215,0,0.3);
         }
-        .restore-btn:hover { transform: scale(1.05); background: white; }
 
-        .scribe-log { flex-grow: 1; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 5px; padding: 10px; font-size: 0.8rem; border: 1px solid #333; }
+        .scribe-log { flex-grow: 1; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 5px; padding: 10px; font-size: 0.8rem; }
         .btn-vault { padding: 8px; font-size: 0.75rem; background: transparent; border: 1px solid var(--saffron); color: white; cursor: pointer; border-radius: 4px; }
         .btn-vault:hover { background: var(--saffron); }
 
-        /* Intro Overlays */
         #intro-overlay { position: fixed; inset: 0; background: #1a0f0d; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .role-box { border: 1px solid var(--gold); padding: 20px; margin: 10px; text-align: center; width: 280px; background: rgba(255,215,0,0.05); border-radius: 10px; }
         input { padding: 10px; background: #222; border: 1px solid var(--saffron); color: white; margin-bottom: 10px; }
@@ -87,8 +81,7 @@
 
 <div id="intro-overlay">
     <h1 style="color:var(--saffron); font-size: 3rem; margin-bottom: 5px;">SCRIBE QUEST</h1>
-    <p style="color:var(--gold); margin-bottom: 25px;">The Dharma Manuscript Restoration</p>
-    <input type="text" id="scribe-name" placeholder="आपका नाम (Your Name)" style="width:250px;">
+    <input type="text" id="scribe-name" placeholder="आपका नाम (Your Name)">
     <div style="display:flex; gap: 15px;">
         <div class="role-box">
             <h3 style="color:var(--saffron)">Grand Librarian</h3>
@@ -105,8 +98,8 @@
 
 <header>
     <div id="display-name" style="color:var(--gold); font-weight:bold;">Scribe: ...</div>
-    <div style="font-size: 1.2rem;">WISDOM: <span id="wisdom-val" style="color:var(--wisdom)">0</span></div>
-    <div id="conn-status" style="font-size:0.8rem; color:var(--saffron)">Waiting...</div>
+    <div style="font-size: 1.2rem;">TEAM WISDOM: <span id="wisdom-val" style="color:var(--wisdom)">0</span></div>
+    <div id="conn-status" style="font-size:0.8rem; color:var(--saffron)">Initializing...</div>
 </header>
 
 <div class="dashboard" id="game-ui">
@@ -115,7 +108,7 @@
         <div id="mission-text" style="color:var(--gold); font-size:1.1rem; margin: 15px 0; line-height: 1.4;">---</div>
         <div id="hint-text" style="font-size:0.85rem; color:#ccc; font-style:italic; background:rgba(0,0,0,0.2); padding: 10px; border-radius: 5px;"></div>
         <div id="host-info" style="display:none; margin-top:auto; padding-top:10px; border-top: 1px solid #444;">
-            <p style="font-size: 0.7rem; color: var(--saffron); margin-bottom: 5px;">Hub Code (टीम को दें):</p>
+            <p style="font-size: 0.7rem; color: var(--saffron); margin-bottom: 5px;">Hub Code:</p>
             <b id="my-id" style="color:var(--gold); word-break: break-all; font-size: 0.75rem; background:#000; padding:5px; display:block;">...</b>
         </div>
     </aside>
@@ -148,7 +141,6 @@
 <script>
     const SECRET_KEY = "samskrit2025";
     
-    // FRAGMENT DATA: Key parts from your 5-page notes
     const Data = {
         "Balaka (Masc-A)": ["-ः", "-म्", "-एन", "-ाय", "-ात्", "-स्य", "-े"],
         "Kavi (Masc-I)": ["-ः", "-म्", "-ना", "-ये", "-ेः", "-ेः", "-ौ"],
@@ -156,12 +148,31 @@
         "Sadhu (Masc-U)": ["-ः", "-म्", "-ना", "-वे", "-ोः", "-ोः", "-ौ"]
     };
 
-    // HINDI MISSIONS: Mapping Hindi Karaka signs to Sanskrit Vibhakti
     const Levels = [
-        { noun: "Balaka (Masc-A)", targetIdx: 0, mission: "बालक ने (Karta) कार्य शुरू किया।", hint: "ने = प्रथमा (1st Spoke)" },
-        { noun: "Kavi (Masc-I)", targetIdx: 1, mission: "राजा ने कवि को (Karma) बुलाया।", hint: "को = द्वितीया (2nd Spoke)" },
-        { noun: "Balika (Fem-AA)", targetIdx: 2, mission: "बालिका के द्वारा (Karan) पत्र लिखा गया।", hint: "के द्वारा = तृतीया (3rd Spoke)" },
-        { noun: "Sadhu (Masc-U)", targetIdx: 3, mission: "शिष्य ने साधु के लिए (Sampradan) फल लाया।", hint: "के लिए = चतुर्थी (4th Spoke)" }
+        { 
+            noun: "Balaka (Masc-A)", 
+            targetIdx: 0, 
+            mission: "बालक ने (Karta) कार्य शुरू किया।", 
+            hint: "ने = प्रथमा (1st Spoke)" 
+        },
+        { 
+            noun: "Kavi (Masc-I)", 
+            targetIdx: 1, 
+            mission: "बालक ने कवि को (Karma) बुलाया।", 
+            hint: "को = द्वितीया (2nd Spoke)" 
+        },
+        { 
+            noun: "Balika (Fem-AA)", 
+            targetIdx: 2, 
+            mission: "बालिका के द्वारा (Karan) चित्र बनाया गया।", 
+            hint: "के द्वारा = तृतीया (3rd Spoke)" 
+        },
+        { 
+            noun: "Sadhu (Masc-U)", 
+            targetIdx: 3, 
+            mission: "बालिका ने साधु के लिए (Sampradan) फल लाया।", 
+            hint: "के लिए = चतुर्थी (4th Spoke)" 
+        }
     ];
 
     let peer, myName, role, connections = [], teamWisdom = 0;
@@ -199,54 +210,11 @@
         });
         conn.on('data', data => {
             if (role === 'host') connections.forEach(c => { if (c !== conn) c.send(data); });
-            if (data.type === 'RESTORE') { 
-                teamWisdom += data.val; 
-                updateUI(); 
-                logAction(data.name, "ने खंड बहाल किया", "+" + data.val); 
-            }
+            if (data.type === 'RESTORE') { teamWisdom = data.total; updateUI(); logAction(data.name, "ने खंड बहाल किया", "+" + data.val); }
         });
     }
 
     function updateChakra() {
         const c = document.getElementById('chakra'); c.innerHTML = '';
         Data[state.currentNoun].forEach((word, i) => {
-            const s = document.createElement('div'); s.className = 'spoke'; s.innerText = word;
-            s.style.transform = `rotate(${i * (360/7)}deg) translateY(-120px)`; c.appendChild(s);
-        });
-    }
-
-    function rotateWheel(dir) {
-        state.rotation += dir * (360/7);
-        state.currentIdx = (state.currentIdx - dir + 7) % 7;
-        document.getElementById('chakra').style.transform = `rotate(${state.rotation}deg)`;
-    }
-
-    function changeNoun(n) { state.currentNoun = n; updateChakra(); }
-
-    function doRestore() {
-        if (state.currentIdx === Levels[state.level].targetIdx && state.currentNoun === Levels[state.level].noun) {
-            teamWisdom += 20;
-            const msg = {type: 'RESTORE', val: 20, name: myName};
-            if(role==='host') connections.forEach(c=>c.send(msg)); else if(connections[0]) connections[0].send(msg);
-            if(state.level < Levels.length - 1) state.level++;
-            updateUI();
-            logAction(myName, "सफलता!", "+20");
-        } else {
-            alert("गलत संरेखण! (Incorrect Alignment)");
-        }
-    }
-
-    function logAction(u, m, v="") {
-        const l = document.getElementById('log'); const e = document.createElement('div');
-        e.innerHTML = `<b style="color:var(--saffron)">${u}</b> ${m} <span style="color:var(--gold)">${v}</span>`; l.prepend(e);
-    }
-
-    function updateUI() {
-        document.getElementById('wisdom-val').innerText = teamWisdom;
-        document.getElementById('mission-text').innerText = "मिशन: " + Levels[state.level].mission;
-        document.getElementById('hint-text').innerText = "संकेत: " + Levels[state.level].hint;
-        updateChakra();
-    }
-</script>
-</body>
-</html>
+            const s = document.createElement('
