@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Scribe Quest: Optimized Hub</title>
+    <title>Scribe Quest: Dharma Hub Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         :root { --saffron: #FF9933; --deep-temple: #1a0f0d; --wisdom: #2ecc71; --gold: #FFD700; --error: #e74c3c; }
@@ -13,59 +13,58 @@
             display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
         }
 
-        /* Progress Bar Update: No outline, cleaner integration */
+        /* Clean Progress Bar: No outline to avoid clashing with header lines */
         .goal-container { flex-grow: 1; margin: 0 60px; text-align: center; }
         .progress-track { 
-            width: 100%; height: 10px; background: rgba(255,255,255,0.1); 
+            width: 100%; height: 10px; background: rgba(255,255,255,0.05); 
             border-radius: 5px; overflow: hidden; margin-top: 8px; 
         }
         #progress-bar { width: 0%; height: 100%; background: var(--gold); transition: width 0.8s ease; box-shadow: 0 0 10px var(--gold); }
         .goal-label { font-size: 0.75rem; color: var(--gold); letter-spacing: 2px; }
 
+        /* Dashboard: Uddeshya/Vault on Left, Roster/Log on Right */
         .dashboard { display: none; grid-template-columns: 300px 1fr 300px; height: calc(100vh - 72px); gap: 15px; padding: 15px; box-sizing: border-box; }
         .panel { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,153,51,0.2); border-radius: 12px; display: flex; flex-direction: column; padding: 15px; overflow: hidden; }
 
-        /* Left Side: Logic */
         .mission-panel { display: flex; flex-direction: column; gap: 20px; }
         .uddeshya-box { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 4px solid var(--saffron); }
         .vault-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-        /* Center Side: Action */
         .main-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         .wheel-area { display: flex; align-items: center; gap: 30px; }
-        .wheel-container { position: relative; width: 360px; height: 360px; }
-        .chakra { width: 100%; height: 100%; border-radius: 50%; border: 12px double var(--saffron); position: relative; transition: transform 0.6s; background: white; }
-        .spoke { position: absolute; width: 100%; text-align: center; font-weight: 900; color: #3e2723; transform-origin: center; top: 50%; margin-top: -12px; font-size: 1.25rem; }
-        .pointer { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 40px solid var(--gold); z-index: 10; filter: drop-shadow(0 0 10px black); }
+        .wheel-container { position: relative; width: 340px; height: 340px; }
+        .chakra { width: 100%; height: 100%; border-radius: 50%; border: 10px double var(--saffron); position: relative; transition: transform 0.6s; background: white; }
+        .spoke { position: absolute; width: 100%; text-align: center; font-weight: 900; color: #3e2723; transform-origin: center; top: 50%; margin-top: -12px; font-size: 1.2rem; }
+        .pointer { position: absolute; top: -35px; left: 50%; transform: translateX(-50%); border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 35px solid var(--gold); z-index: 10; filter: drop-shadow(0 0 10px black); }
 
-        /* Right Side: Social */
         .scribe-log { flex-grow: 1; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 10px; font-size: 0.85rem; margin-top: 10px; }
         .roster-list { max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
         .roster-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #333; font-size: 0.9rem; }
 
-        /* General UI Elements */
         .btn { padding: 10px; cursor: pointer; border: 1px solid var(--saffron); background: transparent; color: white; border-radius: 5px; font-weight: bold; }
         .btn:hover { background: var(--saffron); }
-        .restore-btn { background: var(--gold); color: black; border: none; padding: 15px 50px; font-size: 1.8rem; font-weight: bold; border-radius: 50px; margin-top: 30px; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .restore-btn { background: var(--gold); color: black; border: none; padding: 15px 50px; font-size: 1.7rem; font-weight: bold; border-radius: 50px; margin-top: 30px; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        
         #intro-overlay { position: fixed; inset: 0; background: #1a0f0d; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .role-box { border: 1px solid var(--gold); padding: 20px; margin: 10px; text-align: center; width: 280px; background: rgba(255,215,0,0.05); border-radius: 10px; }
+        input { padding: 10px; background: #222; border: 1px solid var(--saffron); color: white; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div id="intro-overlay">
     <h1 style="color:var(--saffron); font-size: 3.5rem; margin:0;">SCRIBE QUEST</h1>
-    <p style="color:var(--gold); margin-bottom: 30px;">Dharma Manuscript Restoration</p>
-    <input type="text" id="scribe-name" placeholder="आपका नाम (Name)" style="padding:12px; width:280px; margin-bottom:15px; background:#222; border:1px solid var(--saffron); color:white;">
+    <input type="text" id="scribe-name" placeholder="आपका नाम (Name)" style="width:250px;">
     <div style="display:flex; gap: 20px;">
-        <div style="border:1px solid var(--gold); padding:20px; text-align:center;">
-            <h3>Librarian (Host)</h3>
-            <input type="password" id="host-pass" placeholder="Sacred Key" style="width:100px;">
-            <button class="btn" onclick="initializeRole('host')">OPEN HUB</button>
+        <div class="role-box">
+            <h3>Grand Librarian</h3>
+            <input type="password" id="host-pass" placeholder="Sacred Key" style="width:80%">
+            <button class="btn" onclick="initializeRole('host')" style="width:85%;">OPEN HUB</button>
         </div>
-        <div style="border:1px solid var(--gold); padding:20px; text-align:center;">
-            <h3>Scribe (Join)</h3>
-            <input type="text" id="join-id" placeholder="Hub Code" style="width:100px;">
-            <button class="btn" onclick="initializeRole('client')">JOIN HUB</button>
+        <div class="role-box">
+            <h3>Seeking Scribe</h3>
+            <input type="text" id="join-id" placeholder="Hub Code" style="width:80%">
+            <button class="btn" onclick="initializeRole('client')" style="width:85%;">JOIN HUB</button>
         </div>
     </div>
 </div>
@@ -90,7 +89,6 @@
             <h3 style="color:var(--saffron); margin:0 0 10px 0;">उद्देश्य (Uddeshya)</h3>
             <div id="mission-text" style="color:var(--gold); font-size: 1.2rem; line-height:1.4;">---</div>
         </div>
-        
         <div>
             <h3 style="color:var(--saffron); margin:0 0 10px 0;">शब्द भंडार (Vault)</h3>
             <div class="vault-grid">
@@ -100,7 +98,6 @@
                 <button class="btn" onclick="changeNoun('Sadhu')">Sadhu</button>
             </div>
         </div>
-        
         <div id="host-info" style="display:none; margin-top:auto; font-size:0.8rem;">
             <p style="color:var(--saffron); margin:0;">Your Hub Code:</p>
             <b id="my-id" style="color:var(--gold); word-break:break-all;">...</b>
@@ -122,7 +119,6 @@
     <aside class="panel">
         <h3 style="color:var(--saffron); margin:0 0 10px 0;">Scribe Roster</h3>
         <div id="roster-list" class="roster-list"></div>
-        
         <h3 style="color:var(--saffron); margin:15px 0 10px 0;">Dharma Log</h3>
         <div id="log" class="scribe-log"></div>
     </aside>
@@ -133,4 +129,117 @@
     const Data = {
         "Balaka": ["बालकः", "बालकम्", "बालकेन", "बालकाय", "बालकात्", "बालकस्य", "बालके"],
         "Kavi": ["कविः", "कविम्", "कविना", "कवये", "कवेः", "कवेः", "कवौ"],
-        "Balika": ["बालिका", "बालिकाम्", "बालिकया", "बालिकायै", "बालिकायाः", "बालिकायाः", "बालिकाया
+        "Balika": ["बालिका", "बालिकाम्", "बालिकया", "बालिकायै", "बालिकायाः", "बालिकायाः", "बालिकायाम्"],
+        "Sadhu": ["साधुः", "साधुम्", "साधुना", "साधवे", "साधोः", "साधोः", "साधौ"]
+    };
+    const Levels = [
+        { noun: "Balaka", targetIdx: 0, mission: "बालक ने (Karta) कार्य शुरू किया।" },
+        { noun: "Kavi", targetIdx: 1, mission: "बालक ने कवि को (Karma) बुलाया।" },
+        { noun: "Balika", targetIdx: 2, mission: "बालिका के द्वारा (Karan) चित्र बनाया गया।" },
+        { noun: "Sadhu", targetIdx: 3, mission: "बालिका ने साधु के लिए (Sampradan) फल लाया।" }
+    ];
+
+    let peer, myName, role, connections = {}, teamWisdom = 0, scribes = {};
+    let state = { level: 0, rotation: 0, currentIdx: 0, currentNoun: "Balaka" };
+
+    function initializeRole(r) {
+        myName = document.getElementById('scribe-name').value;
+        if (!myName) return alert("नाम लिखें!");
+        if (r === 'host' && document.getElementById('host-pass').value !== SECRET_KEY) return alert("पासवर्ड गलत है!");
+        
+        role = r;
+        // DASHBOARD MUST BE VISIBLE NOW
+        document.getElementById('intro-overlay').style.display = 'none';
+        document.getElementById('game-ui').style.display = 'grid';
+        document.getElementById('display-name').innerText = "Scribe: " + myName;
+
+        peer = new Peer();
+        peer.on('open', id => {
+            if (role === 'host') {
+                document.getElementById('host-info').style.display = 'block';
+                document.getElementById('my-id').innerText = id;
+                document.getElementById('conn-status').innerText = "Hub Active";
+            } else {
+                setupConnection(peer.connect(document.getElementById('join-id').value.trim()));
+            }
+        });
+        peer.on('connection', conn => { if (role === 'host') setupConnection(conn); });
+        updateUI();
+    }
+
+    function setupConnection(conn) {
+        conn.on('open', () => {
+            conn.send({ type: 'HELLO', name: myName });
+            document.getElementById('conn-status').innerText = "Linked";
+        });
+        conn.on('data', data => {
+            if (role === 'host') {
+                Object.values(connections).forEach(c => { if (c.peer !== conn.peer) c.send(data); });
+                if (data.type === 'HELLO') {
+                    connections[conn.peer] = conn;
+                    scribes[conn.peer] = { name: data.name };
+                    updateRoster();
+                    logAction(data.name, "Scribe Quest में शामिल हुए।");
+                }
+            }
+            if (data.type === 'RESTORE') { 
+                teamWisdom = data.total; 
+                state.level = data.level;
+                updateUI(); 
+                logAction(data.name, "ने वर्ण सूत्र जोड़ा", "+" + data.val); 
+            }
+        });
+    }
+
+    function updateRoster() {
+        const list = document.getElementById('roster-list');
+        list.innerHTML = '';
+        Object.keys(scribes).forEach(id => {
+            const div = document.createElement('div');
+            div.className = 'roster-item';
+            div.innerHTML = `<span>📖 ${scribes[id].name}</span> <span style="color:var(--wisdom)">Active</span>`;
+            list.appendChild(div);
+        });
+    }
+
+    function updateChakra() {
+        const c = document.getElementById('chakra'); c.innerHTML = '';
+        Data[state.currentNoun].forEach((word, i) => {
+            const s = document.createElement('div'); s.className = 'spoke'; s.innerText = word;
+            s.style.transform = `rotate(${i * (360/7)}deg) translateY(-120px)`; c.appendChild(s);
+        });
+    }
+
+    function rotateWheel(dir) {
+        state.rotation += dir * (360/7);
+        state.currentIdx = (state.currentIdx - dir + 7) % 7;
+        document.getElementById('chakra').style.transform = `rotate(${state.rotation}deg)`;
+    }
+
+    function doRestore() {
+        if (state.currentIdx === Levels[state.level].targetIdx && state.currentNoun === Levels[state.level].noun) {
+            teamWisdom += 25;
+            if (state.level < Levels.length - 1) state.level++;
+            const msg = { type: 'RESTORE', val: 25, total: teamWisdom, level: state.level, name: myName };
+            if (role === 'host') Object.values(connections).forEach(c => c.send(msg)); else if(Object.values(connections)[0]) Object.values(connections)[0].send(msg);
+            updateUI();
+            logAction(myName, "सफलता!", "+25");
+        } else alert("गलत संरेखण!");
+    }
+
+    function changeNoun(n) { state.currentNoun = n; updateChakra(); }
+
+    function logAction(u, m, v = "") {
+        const l = document.getElementById('log'); const e = document.createElement('div');
+        e.innerHTML = `<b>${u}</b> ${m} <span style="color:var(--gold)">${v}</span>`; l.prepend(e);
+    }
+
+    function updateUI() {
+        document.getElementById('wisdom-val').innerText = teamWisdom;
+        document.getElementById('mission-text').innerText = Levels[state.level].mission;
+        document.getElementById('progress-bar').style.width = Math.min(teamWisdom, 100) + "%";
+        updateChakra();
+    }
+</script>
+</body>
+</html>
