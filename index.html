@@ -2,69 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Scribe Quest: The Complete Star Library</title>
-    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <title>Scribe Quest: The Dharma Hub</title>
     <style>
         :root { --saffron: #FF9933; --temple: #5d4037; --wisdom: #4CAF50; --error: #D32F2F; --gold: #FFD700; }
         body { font-family: 'Segoe UI', sans-serif; background: #1a0f0d; color: white; margin: 0; overflow: hidden; height: 100vh; }
         
-        /* Identity Portal */
+        /* Intro UI */
         #intro-overlay { position: fixed; inset: 0; background: radial-gradient(circle, #3d2b26, #1a0f0d); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .role-box { border: 1px solid var(--gold); padding: 20px; margin: 10px; border-radius: 10px; width: 300px; background: rgba(0,0,0,0.2); }
-        input { padding: 10px; margin: 10px; width: 250px; background: #222; color: white; border: 1px solid var(--saffron); }
-
-        /* Dashboard Layout */
+        
+        /* Dashboard */
         .dashboard { display: none; grid-template-columns: 320px 1fr 320px; grid-template-rows: 80px 1fr 100px; height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box; }
         header { grid-column: 1 / -1; background: var(--temple); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border: 2px solid var(--saffron); border-radius: 8px; }
         .panel { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,153,51,0.2); }
         
-        /* The Chakra Wheel */
-        .wheel-container { position: relative; width: 400px; height: 400px; margin: auto; }
-        .chakra { width: 100%; height: 100%; border-radius: 50%; border: 10px double var(--saffron); position: relative; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: white; display: flex; align-items: center; justify-content: center; }
-        .spoke { position: absolute; width: 100%; text-align: center; font-weight: bold; font-size: 1.2rem; color: var(--temple); transform-origin: center; }
-        .pointer { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 40px solid var(--gold); z-index: 10; filter: drop-shadow(0 0 5px black); }
-
-        .scribe-log { height: 250px; background: rgba(0,0,0,0.3); padding: 10px; overflow-y: auto; border: 1px solid #444; font-size: 0.8rem; }
+        /* Chakra */
+        .wheel-container { position: relative; width: 350px; height: 350px; margin: auto; }
+        .chakra { width: 100%; height: 100%; border-radius: 50%; border: 10px double var(--saffron); position: relative; transition: transform 0.6s; background: white; }
+        .spoke { position: absolute; width: 100%; text-align: center; font-weight: bold; color: var(--temple); transform-origin: center; top: 50%; margin-top: -10px;}
+        .pointer { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid var(--gold); z-index: 10; }
+        
         .btn { padding: 10px; cursor: pointer; border: 1px solid var(--saffron); background: transparent; color: white; font-weight: bold; width: 100%; margin: 5px 0; border-radius: 4px; }
-        .btn:hover { background: var(--saffron); }
-        .inventory-btn { padding: 8px; margin-bottom: 5px; font-size: 0.8rem; }
+        .scribe-log { height: 220px; background: rgba(0,0,0,0.3); padding: 10px; overflow-y: auto; font-size: 0.8rem; border: 1px solid #444; }
+        input { padding: 10px; margin: 10px; background: #222; color: white; border: 1px solid var(--saffron); }
     </style>
 </head>
 <body>
 
 <div id="intro-overlay">
-    <h1 style="color:var(--saffron); font-size: 3rem;">SCRIBE QUEST</h1>
+    <h1 style="color:var(--saffron); font-size: 3rem; margin-bottom: 0;">SCRIBE QUEST</h1>
     <input type="text" id="scribe-name" placeholder="Enter Your Name">
-    <div style="display: flex; gap: 20px;">
+    <div style="display: flex; gap: 10px;">
         <div class="role-box">
-            <h3 style="color:var(--saffron)">Grand Librarian</h3>
-            <input type="password" id="host-pass" placeholder="Enter Password">
-            <button class="btn" onclick="initializeRole('host')" style="background:var(--saffron)">HOST</button>
+            <h3>Grand Librarian</h3>
+            <input type="password" id="host-pass" placeholder="Sacred Key">
+            <button class="btn" onclick="initializeRole('host')" style="background:var(--saffron)">HOST HUB</button>
         </div>
         <div class="role-box">
-            <h3 style="color:var(--gold)">Seeking Scribe</h3>
+            <h3>Seeking Scribe</h3>
             <input type="text" id="join-id" placeholder="Paste Hub Code">
-            <button class="btn" onclick="initializeRole('client')">JOIN</button>
+            <button class="btn" onclick="initializeRole('client')">JOIN HUB</button>
         </div>
     </div>
 </div>
 
 <div class="dashboard" id="game-ui">
     <header>
-        <div id="display-name" style="color:var(--gold)">Scribe: ...</div>
+        <div id="display-name" style="color:var(--gold)">...</div>
         <div id="conn-status" style="color:var(--saffron)">Connecting...</div>
-        <div>TEAM WISDOM: <span id="wisdom-val" style="color:var(--gold)">0</span></div>
+        <div>TEAM WISDOM: <span id="wisdom-val">0</span></div>
     </header>
 
     <aside class="panel">
-        <h2 style="color:var(--saffron)">Mission Brief</h2>
-        <div id="mission-text" style="color:var(--gold); font-weight:bold; margin-bottom: 10px;">Waiting...</div>
-        <p id="hint-text" style="font-size: 0.8rem; color: #aaa;">Logic will appear here.</p>
-        <div id="host-info" style="display:none; margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;">
-            <p style="font-size:0.7rem;">Your Hub Code:</p>
-            <b id="my-id" style="font-size:0.9rem; color:var(--gold)">...</b>
+        <h2 style="color:var(--saffron)">Mission</h2>
+        <div id="mission-text" style="font-size: 1.1rem; color: var(--gold);">---</div>
+        <div id="hint-text" style="font-size: 0.8rem; color: #aaa; margin-top: 5px;"></div>
+        <div id="host-info" style="display:none; margin-top:20px; border-top: 1px solid #444; padding-top: 10px;">
+            <p style="font-size: 0.7rem;">Share this Hub Code:</p>
+            <b id="my-id" style="color:var(--gold); word-break: break-all; font-size:0.8rem;">...</b>
         </div>
-        <button class="btn" style="background:var(--error); margin-top:20px;" onclick="sendBegAppeal()">APPEAL FOR MERCY</button>
     </aside>
 
     <main style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
@@ -72,23 +68,27 @@
             <div class="pointer"></div>
             <div id="chakra" class="chakra"></div>
         </div>
-        <div style="margin-top:20px; display:flex; gap:10px;">
-            <button class="btn" style="width:120px;" onclick="rotateWheel(-1)">← SPIN</button>
-            <button class="btn" style="width:120px;" onclick="rotateWheel(1)">SPIN →</button>
+        <div style="margin-top:10px; display:flex; gap:10px;">
+            <button class="btn" onclick="rotateWheel(-1)" style="width:80px">LEFT</button>
+            <button class="btn" onclick="rotateWheel(1)" style="width:80px">RIGHT</button>
         </div>
-        <button class="btn" style="background:var(--wisdom); width: 250px; margin-top:15px;" onclick="doRestore()">RESTORE FRAGMENT</button>
+        <button class="btn" style="background:var(--wisdom); width:200px; margin-top:10px;" onclick="doRestore()">RESTORE FRAGMENT</button>
     </main>
 
     <aside class="panel">
         <h2 style="color:var(--saffron)">Word Vault</h2>
-        <button class="btn inventory-btn" onclick="changeNoun('Balaka')">Balaka (A-Masc)</button>
-        <button class="btn inventory-btn" onclick="changeNoun('Kavi')">Kavi (I-Masc)</button>
-        <button class="btn inventory-btn" onclick="changeNoun('Balika')">Balika (AA-Fem)</button>
-        <button class="btn inventory-btn" onclick="changeNoun('Sadhu')">Sadhu (U-Masc)</button>
-        <h2 style="color:var(--saffron); margin-top:20px;">Dharma Log</h2>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+            <button class="btn" style="font-size: 0.7rem;" onclick="changeNoun('Balaka')">Balaka</button>
+            <button class="btn" style="font-size: 0.7rem;" onclick="changeNoun('Kavi')">Kavi</button>
+            <button class="btn" style="font-size: 0.7rem;" onclick="changeNoun('Balika')">Balika</button>
+            <button class="btn" style="font-size: 0.7rem;" onclick="changeNoun('Sadhu')">Sadhu</button>
+        </div>
+        <h2 style="color:var(--saffron); margin-top:15px;">Dharma Log</h2>
         <div class="scribe-log" id="log"></div>
     </aside>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
 
 <script>
     const SECRET_KEY = "samskrit2025";
@@ -99,32 +99,32 @@
         "Sadhu": ["साधुः", "साधुम्", "साधुना", "साधवे", "साधोः", "साधोः", "साधौ"]
     };
     const Levels = [
-        { noun: "Balaka", targetIdx: 0, mission: "The Boy (Karta) begins the quest.", hint: "Karta = 1st Spoke." },
-        { noun: "Kavi", targetIdx: 1, mission: "The Scribe seeks the Poet (Karma).", hint: "Karma = 2nd Spoke." },
-        { noun: "Sadhu", targetIdx: 3, mission: "Give wisdom to the Saint (Sampradan).", hint: "Sampradan = 4th Spoke." }
+        { noun: "Balaka", targetIdx: 0, mission: "Find the Karta (The Boy)", hint: "Page 5: Karta = 1st Spoke." },
+        { noun: "Kavi", targetIdx: 1, mission: "Find the Karma (The Poet)", hint: "Page 5: Karma = 2nd Spoke." }
     ];
 
     let peer, myName, role, connections = [], teamWisdom = 0;
     let state = { level: 0, rotation: 0, currentIdx: 0, currentNoun: "Balaka" };
 
     function initializeRole(r) {
+        if (typeof Peer === 'undefined') return alert("Library failed to load. Please refresh.");
         myName = document.getElementById('scribe-name').value;
-        if (!myName) return alert("Enter name!");
-        if (r === 'host' && document.getElementById('host-pass').value !== SECRET_KEY) return alert("Wrong key!");
-        
+        if (!myName) return alert("Enter your name!");
+        if (r === 'host' && document.getElementById('host-pass').value !== SECRET_KEY) return alert("Wrong Key!");
+
         role = r;
         document.getElementById('intro-overlay').style.display = 'none';
         document.getElementById('game-ui').style.display = 'grid';
-        document.getElementById('display-name').innerText = "Scribe: " + myName;
-
+        
         peer = new Peer();
         peer.on('open', id => {
             if (role === 'host') {
                 document.getElementById('host-info').style.display = 'block';
                 document.getElementById('my-id').innerText = id;
-                document.getElementById('conn-status').innerText = "Library Open";
+                document.getElementById('conn-status').innerText = "Hub Active (Waiting)";
             } else {
-                setupConnection(peer.connect(document.getElementById('join-id').value));
+                const tid = document.getElementById('join-id').value.trim();
+                setupConnection(peer.connect(tid));
             }
         });
         peer.on('connection', c => { if (role === 'host') setupConnection(c); });
@@ -134,14 +134,12 @@
     function setupConnection(conn) {
         conn.on('open', () => {
             connections.push(conn);
-            document.getElementById('conn-status').innerText = "Linked";
+            document.getElementById('conn-status').innerText = (role === 'host') ? `${connections.length} Scribes Linked` : "Linked to Hub";
             logAction("System", "Sacred link established.");
         });
         conn.on('data', data => {
             if (role === 'host') connections.forEach(c => { if (c !== conn) c.send(data); });
             if (data.type === 'RESTORE') { teamWisdom += data.val; updateUI(); logAction(data.name, "restored fragment", "+" + data.val); }
-            if (data.type === 'BEG') { if(confirm(`${data.name} begs mercy. Sacrifice 20 pts?`)) { teamWisdom -= 20; const m = {type:'GRANT', name:myName}; if(role==='host') connections.forEach(c=>c.send(m)); else conn.send(m); updateUI(); logAction(myName, "sacrificed for " + data.name); } }
-            if (data.type === 'GRANT') { alert("Mercy granted!"); logAction(data.name, "showed mercy"); }
         });
     }
 
@@ -149,7 +147,7 @@
         const c = document.getElementById('chakra'); c.innerHTML = '';
         Data[state.currentNoun].forEach((word, i) => {
             const s = document.createElement('div'); s.className = 'spoke'; s.innerText = word;
-            s.style.transform = `rotate(${i * (360/7)}deg) translateY(-140px)`; c.appendChild(s);
+            s.style.transform = `rotate(${i * (360/7)}deg) translateY(-120px)`; c.appendChild(s);
         });
     }
 
@@ -163,29 +161,25 @@
 
     function doRestore() {
         if (state.currentIdx === Levels[state.level].targetIdx && state.currentNoun === Levels[state.level].noun) {
-            teamWisdom += 20; logAction(myName, "restored fragment", "+20");
-            const m = {type: 'RESTORE', val: 20, name: myName};
-            if(role==='host') connections.forEach(c=>c.send(m)); else if(connections[0]) connections[0].send(m);
+            teamWisdom += 10;
+            const msg = {type: 'RESTORE', val: 10, name: myName};
+            if(role==='host') connections.forEach(c=>c.send(msg)); else if(connections[0]) connections[0].send(msg);
             if(state.level < Levels.length - 1) state.level++;
             updateUI();
-        } else alert("Alignment incorrect!");
-    }
-
-    function sendBegAppeal() {
-        const m = {type: 'BEG', name: myName};
-        if(role==='host') connections.forEach(c=>c.send(m)); else if(connections[0]) connections[0].send(m);
-        logAction(myName, "sent appeal");
+            logAction(myName, "restored a fragment", "+10");
+        } else alert("Incorrect Vibhakti Alignment!");
     }
 
     function logAction(u, m, v="") {
         const l = document.getElementById('log'); const e = document.createElement('div');
-        e.innerHTML = `<b>${u}</b> ${m} <span style="color:var(--gold)">${v}</span>`; l.prepend(e);
+        e.innerHTML = `<b>${u}</b> ${m} ${v}`; l.prepend(e);
     }
 
     function updateUI() {
         document.getElementById('wisdom-val').innerText = teamWisdom;
         document.getElementById('mission-text').innerText = Levels[state.level].mission;
         document.getElementById('hint-text').innerText = Levels[state.level].hint;
+        document.getElementById('display-name').innerText = "Scribe: " + myName;
         updateChakra();
     }
 </script>
