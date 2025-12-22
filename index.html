@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Scribe Quest: Dharma Hub</title>
+    <title>Scribe Quest: Shared Dharma Ledger</title>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         :root { --saffron: #FF9933; --deep-temple: #1a0f0d; --wisdom: #2ecc71; --gold: #FFD700; --error: #ff4444; }
@@ -15,17 +15,16 @@
         .panel { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,153,51,0.2); border-radius: 12px; display: flex; flex-direction: column; padding: 15px; overflow: hidden; }
         .uddeshya-box { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border-left: 4px solid var(--saffron); margin-bottom: 20px; }
         .vault-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .main-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; transition: 0.5s; }
+        .main-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         .wheel-container { position: relative; width: 340px; height: 340px; margin: 20px 0; }
         .chakra { width: 100%; height: 100%; border-radius: 50%; border: 10px double var(--saffron); position: relative; transition: transform 0.6s; background: white; }
         .spoke { position: absolute; width: 100%; text-align: center; font-weight: 900; color: #3e2723; transform-origin: center; top: 50%; margin-top: -12px; font-size: 1.2rem; }
         .pointer { position: absolute; top: -35px; left: 50%; transform: translateX(-50%); border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 35px solid var(--gold); z-index: 10; filter: drop-shadow(0 0 10px black); }
         .btn { padding: 10px; cursor: pointer; border: 1px solid var(--saffron); background: transparent; color: white; border-radius: 5px; font-weight: bold; }
         .restore-btn { background: var(--gold); color: black; border: none; padding: 15px 50px; font-size: 1.7rem; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .restore-btn:disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; }
-        .scribe-log { flex-grow: 1; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 10px; font-size: 0.85rem; margin-top: 10px; }
+        .scribe-log { flex-grow: 1; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 10px; font-size: 0.85rem; margin-top: 10px; border: 1px solid #333; }
         .freeze-btn { background: var(--error); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
-        #frozen-msg { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--error); font-size: 1.8rem; font-weight: bold; z-index: 100; text-align: center; background: rgba(0,0,0,0.9); padding: 20px; border-radius: 10px; border: 2px solid var(--error); width: 80%; }
+        #frozen-msg { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--error); font-size: 1.5rem; font-weight: bold; z-index: 100; text-align: center; background: rgba(0,0,0,0.9); padding: 20px; border-radius: 10px; border: 2px solid var(--error); }
         #intro-overlay { position: fixed; inset: 0; background: #1a0f0d; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -33,17 +32,17 @@
 
 <div id="intro-overlay">
     <h1 style="color:var(--saffron); font-size: 3rem;">SCRIBE QUEST</h1>
-    <input type="text" id="scribe-name" placeholder="आपका नाम" style="padding:10px; margin-bottom:20px; width:250px;">
+    <input type="text" id="scribe-name" placeholder="आपका नाम लिखें" style="padding:10px; margin-bottom:20px; width:250px;">
     <div style="display:flex; gap: 20px;">
-        <div style="border:1px solid var(--gold); padding:20px; border-radius:10px;">
+        <div style="border:1px solid var(--gold); padding:20px; border-radius:10px; text-align:center;">
             <h3>Librarian</h3>
             <input type="password" id="host-pass" placeholder="Key" style="width:80px;">
-            <button class="btn" onclick="initializeRole('host')">Open</button>
+            <button class="btn" onclick="initializeRole('host')">Open Hub</button>
         </div>
-        <div style="border:1px solid var(--gold); padding:20px; border-radius:10px;">
+        <div style="border:1px solid var(--gold); padding:20px; border-radius:10px; text-align:center;">
             <h3>Scribe</h3>
             <input type="text" id="join-id" placeholder="Code" style="width:80px;">
-            <button class="btn" onclick="initializeRole('client')">Join</button>
+            <button class="btn" onclick="initializeRole('client')">Join Hub</button>
         </div>
     </div>
 </div>
@@ -56,7 +55,7 @@
     </div>
     <div style="text-align: right; min-width:150px;">
         <div style="font-size: 1.4rem; color:var(--wisdom)">WISDOM: <span id="wisdom-val">0</span></div>
-        <div id="conn-status" style="font-size:0.7rem; color:var(--saffron)">Connecting...</div>
+        <div id="conn-status" style="font-size:0.7rem; color:var(--saffron)">Waiting...</div>
     </div>
 </header>
 
@@ -74,13 +73,13 @@
             <button class="btn" onclick="changeNoun('Sadhu')">साधु</button>
         </div>
         <div id="host-info" style="display:none; margin-top:auto; font-size:0.7rem;">
-            Code: <b id="my-id" style="color:var(--gold)">...</b>
+            Hub Code: <b id="my-id" style="color:var(--gold); cursor:pointer;" onclick="copyCode()">...</b>
         </div>
     </aside>
 
     <main class="main-stage" id="main-stage">
-        <div id="frozen-msg">Paused:प्रशासक द्वारा प्रतिबंधित </div>
-        <div class="wheel-area" style="display:flex; align-items:center; gap:20px;">
+        <div id="frozen-msg">अवरुद्ध (PAUSED)</div>
+        <div style="display:flex; align-items:center; gap:20px;">
             <button class="btn" style="border-radius:50%; width:50px; height:50px;" onclick="rotateWheel(-1)">←</button>
             <div class="wheel-container">
                 <div class="pointer"></div>
@@ -93,8 +92,8 @@
 
     <aside class="panel">
         <h3 style="color:var(--saffron); margin:0 0 10px 0;">Scribe Roster</h3>
-        <div id="roster-list" style="flex-grow:0.5; overflow-y:auto;"></div>
-        <h3 style="color:var(--saffron); margin:10px 0 5px 0;">Dharma Log</h3>
+        <div id="roster-list" style="max-height:150px; overflow-y:auto; margin-bottom:10px;"></div>
+        <h3 style="color:var(--saffron); margin:0 0 5px 0;">Dharma Log</h3>
         <div id="log" class="scribe-log"></div>
     </aside>
 </div>
@@ -120,7 +119,7 @@
     function initializeRole(r) {
         myName = document.getElementById('scribe-name').value;
         if (!myName) return alert("नाम लिखें!");
-        if (r === 'host' && document.getElementById('host-pass').value !== SECRET_KEY) return alert("Wrong Key!");
+        if (r === 'host' && document.getElementById('host-pass').value !== SECRET_KEY) return alert("गलत की!");
         role = r;
         document.getElementById('intro-overlay').style.display = 'none';
         document.getElementById('game-ui').style.display = 'grid';
@@ -132,6 +131,7 @@
                 document.getElementById('host-info').style.display = 'block';
                 document.getElementById('my-id').innerText = id;
                 document.getElementById('conn-status').innerText = "Hub Active";
+                logAction("System", "Hub is now open for scribes.");
             } else {
                 setupConnection(peer.connect(document.getElementById('join-id').value.trim()));
             }
@@ -147,34 +147,37 @@
         });
         conn.on('data', data => {
             if (role === 'host') {
+                // Relay everything to all scribes
                 Object.values(connections).forEach(c => { if (c.peer !== conn.peer) c.send(data); });
+                
                 if (data.type === 'HELLO') {
                     connections[conn.peer] = conn;
                     scribes[conn.peer] = { name: data.name, frozen: false };
                     updateRoster();
-                    logAction(data.name, "शामिल हुए।");
+                    const joinMsg = { type: 'LOG', user: data.name, msg: "connected to the hub." };
+                    broadcast(joinMsg);
+                    logAction(data.name, "connected to the hub.");
                     conn.send({ type: 'SYNC', total: teamWisdom, level: state.level });
                 }
             }
+            
             if (data.type === 'RESTORE') { 
-                teamWisdom = data.total; state.level = data.level;
-                updateUI(); logAction(data.name, "ने सूत्र जोड़ा", "+" + data.val); 
+                teamWisdom = data.total; state.level = data.level; updateUI(); 
+                logAction(data.name, "restored a thread!", "+" + data.val); 
             }
             if (data.type === 'PENALTY') {
                 teamWisdom = data.total; updateUI();
-                logAction(data.name, "ने गलत सूत्र चुना", "-" + data.val);
+                logAction(data.name, "misaligned a सूत्र.", "-" + data.val);
             }
+            if (data.type === 'LOG') { logAction(data.user, data.msg); }
             if (data.type === 'FREEZE') { state.frozen = data.val; updateFreezeUI(); }
         });
     }
 
     function updateRoster() {
-        const list = document.getElementById('roster-list');
-        list.innerHTML = '';
+        const list = document.getElementById('roster-list'); list.innerHTML = '';
         Object.keys(scribes).forEach(id => {
-            const div = document.createElement('div');
-            div.style.display = "flex"; div.style.justifyContent = "space-between"; div.style.marginBottom = "5px";
-            // Freeze button ONLY visible to Librarian (Host)
+            const div = document.createElement('div'); div.style.display = "flex"; div.style.justifyContent = "space-between";
             const fBtn = role === 'host' ? `<button class="freeze-btn" onclick="toggleFreeze('${id}')">${scribes[id].frozen ? 'Unfreeze' : 'Freeze'}</button>` : '';
             div.innerHTML = `<span>📖 ${scribes[id].name}</span> ${fBtn}`;
             list.appendChild(div);
@@ -184,16 +187,32 @@
     function toggleFreeze(pid) {
         scribes[pid].frozen = !scribes[pid].frozen;
         connections[pid].send({ type: 'FREEZE', val: scribes[pid].frozen });
+        const freezeMsg = { type: 'LOG', user: "Librarian", msg: (scribes[pid].frozen ? "paused " : "unpaused ") + scribes[pid].name };
+        broadcast(freezeMsg); logAction("Librarian", (scribes[pid].frozen ? "paused " : "unpaused ") + scribes[pid].name);
         updateRoster();
     }
 
     function updateFreezeUI() {
-        const stage = document.getElementById('main-stage');
-        const btn = document.getElementById('restore-btn');
-        const msg = document.getElementById('frozen-msg');
-        stage.style.filter = state.frozen ? "grayscale(1) brightness(0.5)" : "none";
-        btn.disabled = state.frozen;
-        msg.style.display = state.frozen ? 'block' : 'none';
+        document.getElementById('main-stage').style.filter = state.frozen ? "grayscale(1) brightness(0.5)" : "none";
+        document.getElementById('restore-btn').disabled = state.frozen;
+        document.getElementById('frozen-msg').style.display = state.frozen ? 'block' : 'none';
+    }
+
+    function doRestore() {
+        if (state.currentIdx === Levels[state.level].targetIdx && state.currentNoun === Levels[state.level].noun) {
+            teamWisdom += 25; if (state.level < Levels.length - 1) state.level++;
+            broadcast({ type: 'RESTORE', val: 25, total: teamWisdom, level: state.level, name: myName });
+            logAction(myName, "restored a thread!", "+25"); updateUI();
+        } else {
+            teamWisdom = Math.max(0, teamWisdom - 10);
+            broadcast({ type: 'PENALTY', val: 10, total: teamWisdom, name: myName });
+            logAction(myName, "misaligned a सूत्र.", "-10"); updateUI(); alert("Incorrect alignment! -10 Wisdom Penalty.");
+        }
+    }
+
+    function broadcast(msg) {
+        if (role === 'host') Object.values(connections).forEach(c => c.send(msg));
+        else if(connections) Object.values(connections)[0]?.send(msg);
     }
 
     function updateChakra() {
@@ -211,29 +230,11 @@
         document.getElementById('chakra').style.transform = `rotate(${state.rotation}deg)`;
     }
 
-    function doRestore() {
-        if (state.currentIdx === Levels[state.level].targetIdx && state.currentNoun === Levels[state.level].noun) {
-            teamWisdom += 25;
-            if (state.level < Levels.length - 1) state.level++;
-            broadcast({ type: 'RESTORE', val: 25, total: teamWisdom, level: state.level, name: myName });
-            updateUI(); logAction(myName, "सफलता!", "+25");
-        } else {
-            teamWisdom = Math.max(0, teamWisdom - 10);
-            broadcast({ type: 'PENALTY', val: 10, total: teamWisdom, name: myName });
-            updateUI(); alert("गलत सूत्र! -10 Wisdom Penalty.");
-        }
-    }
-
-    function broadcast(msg) {
-        if (role === 'host') Object.values(connections).forEach(c => c.send(msg));
-        else if(Object.values(connections)[0]) Object.values(connections)[0].send(msg);
-    }
-
     function changeNoun(n) { if (!state.frozen) { state.currentNoun = n; updateChakra(); } }
 
-    function logAction(u, m, v = "") {
+    function logAction(u, m) {
         const l = document.getElementById('log'); const e = document.createElement('div');
-        e.innerHTML = `<b>${u}</b> ${m} <span style="color:var(--gold)">${v}</span>`; l.prepend(e);
+        e.innerHTML = `<b style="color:var(--saffron)">${u}</b> ${m}`; l.prepend(e);
     }
 
     function updateUI() {
@@ -242,6 +243,8 @@
         document.getElementById('progress-bar').style.width = Math.min(teamWisdom, 100) + "%";
         updateChakra();
     }
+    
+    function copyCode() { navigator.clipboard.writeText(document.getElementById('my-id').innerText); alert("Code copied!"); }
 </script>
 </body>
 </html>
