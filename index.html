@@ -2,41 +2,57 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>Scribe Quest: Apex Magic Triangle</title>
+    <title>Scribe Quest: Secure Apex Hub</title>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         :root { --saffron: #FF9933; --deep-temple: #1a0f0d; --wisdom: #2ecc71; --gold: #FFD700; --error: #ff4444; }
         body { font-family: 'Segoe UI', sans-serif; background: #000; color: white; margin: 0; padding: 0; overflow: hidden; height: 100vh; }
         header { height: 70px; background: #2d1b18; border-bottom: 2px solid var(--saffron); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        
         .progress-track { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-top: 5px; }
         #progress-bar { width: 0%; height: 100%; background: var(--gold); transition: width 0.5s ease; }
+
         .dashboard { display: none; grid-template-columns: 300px 1fr 300px; height: calc(100vh - 72px); gap: 15px; padding: 15px; box-sizing: border-box; }
         .panel { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,153,51,0.2); border-radius: 12px; display: flex; flex-direction: column; padding: 15px; overflow: hidden; }
+
         #pyramid-container { position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column-reverse; align-items: center; gap: 2px; pointer-events: none; z-index: 5; }
         .pyramid-row { display: flex; gap: 2px; }
         .block { width: 16px; height: 10px; background: var(--gold); border: 1px solid #000; opacity: 0.1; transition: 0.5s; }
         .block.active { opacity: 1; box-shadow: 0 0 8px var(--gold); }
+
         .main-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         #topic-indicator { color: var(--gold); font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; text-transform: uppercase; }
         .chakra { width: 340px; height: 340px; border-radius: 50%; border: 10px double var(--saffron); position: relative; transition: transform 0.6s; background: white; margin-bottom: 15px; }
         .pointer { width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 35px solid var(--gold); z-index: 10; filter: drop-shadow(0 0 10px black); margin-bottom: -5px; }
         .spoke { position: absolute; width: 100%; text-align: center; font-weight: 900; color: #3e2723; transform-origin: center; top: 50%; margin-top: -12px; font-size: 1rem; }
+        
         .restore-btn { background: var(--gold); color: black; border: none; padding: 12px 40px; font-size: 1.6rem; font-weight: bold; border-radius: 50px; cursor: pointer; }
         .scribe-log { flex-grow: 1; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 10px; font-size: 0.8rem; border: 1px solid #333; margin-top: 10px;}
         .freeze-btn { background: var(--error); color: white; border: none; padding: 2px 5px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
         #frozen-msg { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--error); font-size: 1.5rem; font-weight: bold; z-index: 100; text-align: center; background: rgba(0,0,0,0.9); padding: 20px; border-radius: 10px; border: 2px solid var(--error); }
+        
         .btn { padding: 8px; cursor: pointer; border: 1px solid var(--saffron); background: transparent; color: white; border-radius: 5px; font-weight: bold; }
         #intro-overlay { position: fixed; inset: 0; background: #1a0f0d; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .role-box { border: 1px solid var(--gold); padding: 20px; margin: 10px; text-align: center; width: 280px; background: rgba(255,215,0,0.05); border-radius: 10px; }
+        input { padding: 10px; background: #222; border: 1px solid var(--saffron); color: white; margin-bottom: 10px; width: 80%; }
     </style>
 </head>
 <body>
 
 <div id="intro-overlay">
-    <h1 style="color:var(--saffron); font-size: 3rem;">SCRIBE QUEST</h1>
-    <input type="text" id="scribe-name" placeholder="आपका नाम (Name)" style="padding:10px; margin-bottom:20px; width:250px;">
-    <div style="display:flex; gap: 20px;">
-        <button class="btn" onclick="initializeRole('host')">Open Hub (Librarian)</button>
-        <button class="btn" onclick="initializeRole('client')">Join Hub (Scribe)</button>
+    <h1 style="color:var(--saffron); font-size: 3rem; margin-bottom: 5px;">SCRIBE QUEST</h1>
+    <input type="text" id="scribe-name" placeholder="आपका नाम (Name)">
+    <div style="display:flex; gap: 15px;">
+        <div class="role-box">
+            <h3 style="color:var(--saffron)">Librarian</h3>
+            <input type="password" id="host-pass" placeholder="Sacred Key">
+            <button class="btn" onclick="initializeRole('host')" style="width:90%">Open Hub</button>
+        </div>
+        <div class="role-box">
+            <h3 style="color:var(--gold)">Seeking Scribe</h3>
+            <input type="text" id="join-id" placeholder="Hub Code">
+            <button class="btn" onclick="initializeRole('client')" style="width:90%">Join Hub</button>
+        </div>
     </div>
 </div>
 
@@ -59,14 +75,14 @@
             <h4 style="margin:0; font-size:0.8rem; color:var(--saffron)">उद्देश्य</h4>
             <div id="mission-text" style="color:var(--gold); font-size: 0.95rem; line-height: 1.4;">---</div>
         </div>
-        <h3 style="color:var(--saffron); font-size: 0.9rem;">शब्द भंडार (Vault)</h3>
+        <h3 style="color:var(--saffron); font-size: 0.9rem;">शब्द भंडार</h3>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5px;">
             <button class="btn" onclick="changeNoun('Balaka')">बालक</button>
             <button class="btn" onclick="changeNoun('Kavi')">कवि</button>
             <button class="btn" onclick="changeNoun('Balika')">बालिका</button>
             <button class="btn" onclick="changeNoun('Sadhu')">साधु</button>
         </div>
-        <div id="host-info" style="display:none; margin-top:auto; font-size:0.7rem;">Code: <b id="my-id" style="color:var(--gold); cursor:pointer;" onclick="copyCode()">...</b></div>
+        <div id="host-info" style="display:none; margin-top:auto; font-size:0.7rem;">Code: <b id="my-id" onclick="navigator.clipboard.writeText(this.innerText); alert('Copied!');" style="cursor:pointer; color:var(--gold)">...</b></div>
     </aside>
 
     <main class="main-stage" id="main-stage">
@@ -105,8 +121,7 @@
         "Balika": { 0: ["बालिका", "बालिके", "बालिकाः"], 1: ["बालिकाम्", "बालिके", "बालिकाः"], 2: ["बालिकया", "बालिकाभ्याम्", "बालिकाभिः"], 3: ["बालिकायै", "बालिकाभ्याम्", "बालिकाभ्यः"], 4: ["बालिकायाः", "बालिकाभ्याम्", "बालिकाभ्यः"], 5: ["बालिकायाः", "बालिकयोः", "बालिकानाम्"], 6: ["बालिकायाम्", "बालिकयोः", "बालिकासु"] },
         "Sadhu": { 0: ["साधुः", "साधू", "साधवः"], 1: ["साधुम्", "साधू", "साधून्"], 2: ["साधुना", "साधुभ्याम्", "साधुभिः"], 3: ["साधवे", "साधुभ्याम्", "साधुभ्यः"], 4: ["साधोः", "साधुभ्याम्", "साधुभ्यः"], 5: ["साधोः", "साध्वोः", "साधूनाम्"], 6: ["साधौ", "साध्वोः", "साधुषु"] }
     };
-
-    const KarakaMap = ["प्रथमा (KARTA)", "द्वितीया (KARMA)", "तृतीया (KARAN)", "चतुर्थी (SAMPRADAN)", "पञ्चमी (APADAN)", "षष्ठी (SAMBANDH)", "सप्तमी (ADHIKARAN)", "सम्बोधन"];
+    const KarakaMap = ["प्रथमा (KARTA)", "द्वितीया (KARMA)", "तृतीया (KARAN)", "चतुर्थी (SAMPRADAN)", "पञ्चमी (APADAN)", "षष्ठी (SAMBANDH)", "सप्तमी (ADHIKARAN)"];
     const NounHindi = {"Balaka": "बालक", "Kavi": "कवि", "Balika": "बालिका", "Sadhu": "साधु"};
 
     function generateContextualMission(qIdx) {
@@ -116,27 +131,17 @@
         const kIdx = info.range[Math.floor(Math.random() * info.range.length)];
         const vIdx = Math.floor(Math.random() * 3);
         const vText = ["(एकवचन)", "(द्विवचन)", "(बहुवचन)"][vIdx];
-        
-        const missions = [
-            `वाक्य में ${NounHindi[n]} ${vText} के द्वारा कार्य का संपादन दर्शाएँ।`,
-            `क्रिया का फल ${NounHindi[n]} ${vText} पर पड़ना चाहिए।`,
-            `${NounHindi[n]} ${vText} को साधन बनाकर कार्य पूर्ण करें।`,
-            `${NounHindi[n]} ${vText} को दान या अर्पण करने का भाव चुनें।`,
-            `${NounHindi[n]} ${vText} से पृथक होने का भाव प्रदर्शित करें।`,
-            `${NounHindi[n]} ${vText} के साथ संबंध स्थापित करें।`,
-            `${NounHindi[n]} ${vText} के स्थान या आधार का चयन करें।`
-        ];
-
-        return { noun: n, kIdx: kIdx, vIdx: vIdx, mission: missions[kIdx] || `${NounHindi[n]} का ${KarakaMap[kIdx]} रूप चुनें।` };
+        const missions = [`${NounHindi[n]} ${vText} के द्वारा कार्य का संपादन दर्शाएँ।`, `${NounHindi[n]} ${vText} पर क्रिया का फल पड़ रहा है।`, `${NounHindi[n]} ${vText} को साधन बनाएँ।`, `${NounHindi[n]} ${vText} को अर्पण करें।`, `${NounHindi[n]} ${vText} से अलग होने का भाव।`, `${NounHindi[n]} ${vText} के साथ संबंध।`, `${NounHindi[n]} ${vText} का स्थान।`];
+        return { noun: n, kIdx, vIdx, mission: missions[kIdx] };
     }
 
     function getLevelInfo(q) {
-        if (q < 11) return { story: 1, title: "Base Foundation", pen: 5, range: [0, 1] };
+        if (q < 11) return { story: 1, title: "Foundation", pen: 5, range: [0, 1] };
         if (q < 20) return { story: 2, title: "Rising Pillar", pen: 10, range: [2, 3] };
         if (q < 27) return { story: 3, title: "Sanctum Entrance", pen: 15, range: [4] };
         if (q < 32) return { story: 4, title: "Inner Chamber", pen: 20, range: [5] };
         if (q < 35) return { story: 5, title: "Scriptorium", pen: 25, range: [6] };
-        return { story: 6, title: "Apex Zenith", pen: 30, range: [0, 1, 2, 3, 4, 5, 6] };
+        return { story: 6, title: "Apex Zenith", pen: 30, range: [0,1,2,3,4,5,6] };
     }
 
     let peer, myName, role, connections = {}, teamWisdom = 0, scribes = {};
@@ -144,7 +149,8 @@
 
     function initializeRole(r) {
         myName = document.getElementById('scribe-name').value;
-        if (!myName) return alert("नाम!");
+        if (!myName) return alert("नाम लिखें!");
+        if (r === 'host' && document.getElementById('host-pass').value !== SECRET_KEY) return alert("Wrong Key!");
         role = r;
         document.getElementById('intro-overlay').style.display = 'none';
         document.getElementById('game-ui').style.display = 'grid';
@@ -152,12 +158,8 @@
         initPyramid();
         peer = new Peer();
         peer.on('open', id => {
-            if (role === 'host') { 
-                document.getElementById('host-info').style.display = 'block'; 
-                document.getElementById('my-id').innerText = id; 
-                state.currentQ = generateContextualMission(0);
-                updateUI();
-            } else setupConnection(peer.connect(document.getElementById('join-id').value.trim()));
+            if (role === 'host') { document.getElementById('host-info').style.display = 'block'; document.getElementById('my-id').innerText = id; state.currentQ = generateContextualMission(0); updateUI(); }
+            else setupConnection(peer.connect(document.getElementById('join-id').value.trim()));
         });
         peer.on('connection', conn => { if (role === 'host') setupConnection(conn); });
     }
@@ -167,14 +169,10 @@
         conn.on('data', data => {
             if (role === 'host') {
                 Object.values(connections).forEach(c => { if(c.peer !== conn.peer) c.send(data); });
-                if (data.type === 'HELLO') {
-                    connections[conn.peer] = conn; scribes[conn.peer] = { name: data.name, frozen: false };
-                    updateRoster(); broadcast({ type: 'LOG', user: data.name, msg: "joined the quest." });
-                    conn.send({ type: 'SYNC', total: teamWisdom, q: state.qIdx, currentQ: state.currentQ });
-                }
+                if (data.type === 'HELLO') { connections[conn.peer] = conn; scribes[conn.peer] = { name: data.name, frozen: false }; updateRoster(); conn.send({ type: 'SYNC', total: teamWisdom, q: state.qIdx, currentQ: state.currentQ }); }
             }
-            if (data.type === 'RESTORE') { teamWisdom = data.total; state.qIdx = data.q; state.currentQ = data.nextQ; updateUI(); logAction(data.name, "restored thread!", "+" + data.val); }
-            if (data.type === 'PENALTY') { teamWisdom = data.total; updateUI(); logAction(data.name, "misaligned thread", "-" + data.val); }
+            if (data.type === 'RESTORE') { teamWisdom = data.total; state.qIdx = data.q; state.currentQ = data.nextQ; updateUI(); logAction(data.name, "restored!", "+20"); }
+            if (data.type === 'PENALTY') { teamWisdom = data.total; updateUI(); logAction(data.name, "error", "-" + data.val); }
             if (data.type === 'FREEZE') { state.frozen = data.val; updateFreezeUI(); }
             if (data.type === 'SYNC') { teamWisdom = data.total; state.qIdx = data.q; state.currentQ = data.currentQ; updateUI(); }
             if (data.type === 'LOG') logAction(data.user, data.msg);
@@ -187,78 +185,27 @@
         if (state.wheelIdx === state.currentQ.kIdx && state.currentNoun === state.currentQ.noun && state.vachan === state.currentQ.vIdx) {
             teamWisdom += 20; state.qIdx++;
             const nextQ = generateContextualMission(state.qIdx);
-            broadcast({ type: 'RESTORE', total: teamWisdom, q: state.qIdx, nextQ: nextQ, name: myName, val: 20 });
+            broadcast({ type: 'RESTORE', total: teamWisdom, q: state.qIdx, nextQ, name: myName, val: 20 });
             state.currentQ = nextQ; updateUI();
         } else {
             teamWisdom = Math.max(0, teamWisdom - info.pen);
             broadcast({ type: 'PENALTY', val: info.pen, total: teamWisdom, name: myName });
-            updateUI(); alert("गलत संरेखण! Penalty: -" + info.pen);
+            updateUI(); alert("Wrong!");
         }
     }
 
-    function broadcast(msg) {
-        if (role === 'host') Object.values(connections).forEach(c => c.send(msg));
-        else if (Object.values(connections)[0]) Object.values(connections)[0].send(msg);
-    }
-
-    function updateUI() {
-        if (!state.currentQ) return;
-        const info = getLevelInfo(state.qIdx);
-        document.getElementById('wisdom-val').innerText = teamWisdom;
-        document.getElementById('story-title').innerText = `STORY ${info.story}: ${info.title}`;
-        document.getElementById('topic-indicator').innerText = KarakaMap[state.currentQ.kIdx];
-        document.getElementById('mission-text').innerText = state.qIdx < 36 ? state.currentQ.mission : "विजय! परम लक्ष्य प्राप्त।";
-        document.getElementById('progress-bar').style.width = (state.qIdx / 36 * 100) + "%";
-        updateChakra(); updatePyramid();
-    }
-
-    function initPyramid() {
-        const container = document.getElementById('pyramid-container'); container.innerHTML = '';
-        [11, 9, 7, 5, 3, 1].forEach((count, rIdx) => {
-            const rowDiv = document.createElement('div'); rowDiv.className = 'pyramid-row';
-            for(let i=0; i<count; i++) {
-                const b = document.createElement('div'); b.className = 'block'; b.id = `block-${rIdx}-${i}`; rowDiv.appendChild(b);
-            }
-            container.appendChild(rowDiv);
-        });
-    }
-
-    function updatePyramid() {
-        let activeCount = 0;
-        [11, 9, 7, 5, 3, 1].forEach((count, r) => {
-            for(let c=0; c<count; c++) {
-                const el = document.getElementById(`block-${r}-${c}`);
-                if (activeCount < state.qIdx) el.classList.add('active'); else el.classList.remove('active');
-                activeCount++;
-            }
-        });
-    }
-
-    function updateChakra() {
-        const c = document.getElementById('chakra'); c.innerHTML = '';
-        for(let i=0; i<7; i++) {
-            const word = Data[state.currentNoun][i][state.vachan];
-            const s = document.createElement('div'); s.className = 'spoke'; s.innerText = word;
-            s.style.transform = `rotate(${i * (360/7)}deg) translateY(-120px)`; c.appendChild(s);
-        }
-    }
-
+    function broadcast(msg) { if (role === 'host') Object.values(connections).forEach(c => c.send(msg)); else if (Object.values(connections)[0]) Object.values(connections)[0].send(msg); }
+    function logAction(u, m) { const l = document.getElementById('log'); const e = document.createElement('div'); e.innerHTML = `<b>${u}</b> ${m}`; l.prepend(e); }
     function rotateWheel(dir) { if(!state.frozen) { state.rotation += dir * (360/7); state.wheelIdx = (state.wheelIdx - dir + 7) % 7; document.getElementById('chakra').style.transform = `rotate(${state.rotation}deg)`; } }
     function changeNoun(n) { if(!state.frozen) { state.currentNoun = n; updateUI(); } }
     function changeVachan(v) { if(!state.frozen) { state.vachan = v; updateUI(); } }
-    function logAction(u, m) { const l = document.getElementById('log'); const e = document.createElement('div'); e.innerHTML = `<b>${u}</b> ${m}`; l.prepend(e); }
-    function copyCode() { navigator.clipboard.writeText(document.getElementById('my-id').innerText); alert("Code copied!"); }
-    function updateRoster() {
-        const list = document.getElementById('roster-list'); list.innerHTML = '';
-        Object.keys(scribes).forEach(id => {
-            const div = document.createElement('div'); div.style.display = 'flex'; div.style.justifyContent = 'space-between';
-            const fBtn = role === 'host' ? `<button class="freeze-btn" onclick="toggleFreeze('${id}')">${scribes[id].frozen ? 'Unfreeze' : 'Freeze'}</button>` : '';
-            div.innerHTML = `<span>📖 ${scribes[id].name}</span> ${fBtn}`;
-            list.appendChild(div);
-        });
-    }
-    function toggleFreeze(pid) { scribes[pid].frozen = !scribes[pid].frozen; connections[pid].send({ type: 'FREEZE', val: scribes[pid].frozen }); updateRoster(); }
     function updateFreezeUI() { document.getElementById('main-stage').style.filter = state.frozen ? "grayscale(1) brightness(0.5)" : "none"; document.getElementById('restore-btn').disabled = state.frozen; document.getElementById('frozen-msg').style.display = state.frozen ? 'block' : 'none'; }
+    function initPyramid() { const c = document.getElementById('pyramid-container'); [11, 9, 7, 5, 3, 1].forEach((count, r) => { const div = document.createElement('div'); div.className = 'pyramid-row'; for(let i=0; i<count; i++){ const b = document.createElement('div'); b.className = 'block'; b.id = `block-${r}-${i}`; div.appendChild(b); } c.appendChild(div); }); }
+    function updatePyramid() { let act = 0; [11, 9, 7, 5, 3, 1].forEach((count, r) => { for(let i=0; i<count; i++){ const el = document.getElementById(`block-${r}-${i}`); if (act < state.qIdx) el.classList.add('active'); else el.classList.remove('active'); act++; } }); }
+    function updateChakra() { const c = document.getElementById('chakra'); c.innerHTML = ''; for(let i=0; i<7; i++){ const s = document.createElement('div'); s.className = 'spoke'; s.innerText = Data[state.currentNoun][i][state.vachan]; s.style.transform = `rotate(${i * (360/7)}deg) translateY(-120px)`; c.appendChild(s); } }
+    function updateUI() { if (!state.currentQ) return; const info = getLevelInfo(state.qIdx); document.getElementById('wisdom-val').innerText = teamWisdom; document.getElementById('story-title').innerText = `STORY ${info.story}: ${info.title}`; document.getElementById('topic-indicator').innerText = KarakaMap[state.currentQ.kIdx]; document.getElementById('mission-text').innerText = state.qIdx < 36 ? state.currentQ.mission : "Apex!"; document.getElementById('progress-bar').style.width = (state.qIdx / 36 * 100) + "%"; updateChakra(); updatePyramid(); }
+    function updateRoster() { const list = document.getElementById('roster-list'); list.innerHTML = ''; Object.keys(scribes).forEach(id => { const div = document.createElement('div'); div.style.display = 'flex'; div.style.justifyContent = 'space-between'; const fBtn = role === 'host' ? `<button class="freeze-btn" onclick="toggleFreeze('${id}')">${scribes[id].frozen ? 'Unfreeze' : 'Freeze'}</button>` : ''; div.innerHTML = `<span>📖 ${scribes[id].name}</span> ${fBtn}`; list.appendChild(div); }); }
+    function toggleFreeze(pid) { scribes[pid].frozen = !scribes[pid].frozen; connections[pid].send({ type: 'FREEZE', val: scribes[pid].frozen }); updateRoster(); }
 </script>
 </body>
 </html>
